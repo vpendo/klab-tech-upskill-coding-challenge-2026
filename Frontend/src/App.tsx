@@ -1,3 +1,4 @@
+
 /**
  * Task Management System.
  * CRUD: create, view, update, delete. Also filter, search, mark status.
@@ -138,7 +139,7 @@ function App() {
   return (
     <div className="min-h-svh">
       <header className="border-b border-navy/10 bg-navy text-sand">
-        <div className="mx-auto max-w-6xl px-4 py-6">
+        <div className="mx-auto max-w-6xl px-3 py-5 sm:px-4 sm:py-6">
           <h1 className="font-display text-3xl text-white sm:text-4xl">
             Task Management
           </h1>
@@ -148,56 +149,70 @@ function App() {
         </div>
       </header>
 
-      <main className="mx-auto grid max-w-6xl gap-6 px-4 py-8 lg:grid-cols-[340px_1fr]">
-        <section className="h-fit rounded-2xl border border-navy/10 bg-white/90 p-6 shadow-[0_18px_40px_rgba(27,58,75,0.08)]">
+      <main className="mx-auto grid max-w-6xl gap-4 px-3 py-5 sm:gap-6 sm:px-4 sm:py-8 lg:grid-cols-[340px_1fr]">
+        <section className="h-fit rounded-2xl border border-navy/10 bg-white/90 p-4 shadow-[0_18px_40px_rgba(27,58,75,0.08)] sm:p-6">
           <p className="text-xs font-bold uppercase tracking-wide text-clay">
             {editingId === null ? "New task" : "Editing"}
           </p>
+
           <h2 className="font-display mt-1 text-2xl text-navy">
             {editingId === null ? "Create a task" : `Update task #${editingId}`}
           </h2>
+
           <form onSubmit={handleSubmit} className="mt-5 grid gap-4" noValidate>
             <label className="grid gap-1 text-sm font-semibold text-navy">
               Title
+
               <input
                 value={form.title}
                 onChange={(e) => {
                   setForm({ ...form, title: e.target.value });
-                  if (fieldErrors.title) setFieldErrors({ ...fieldErrors, title: undefined });
+                  if (fieldErrors.title) {
+                    setFieldErrors({ ...fieldErrors, title: undefined });
+                  }
                 }}
                 maxLength={200}
                 aria-invalid={Boolean(fieldErrors.title)}
-                className={`rounded-xl border bg-sand/50 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-clay/40 ${
+                className={`w-full rounded-xl border bg-sand/50 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-clay/40 ${
                   fieldErrors.title ? "border-red-400" : "border-navy/15"
                 }`}
                 placeholder="What needs to get done?"
               />
+
               {fieldErrors.title && (
-                <span className="text-xs font-medium text-red-700">{fieldErrors.title}</span>
+                <span className="text-xs font-medium text-red-700">
+                  {fieldErrors.title}
+                </span>
               )}
             </label>
 
             <label className="grid gap-1 text-sm font-semibold text-navy">
               Description
+
               <textarea
                 value={form.description}
                 onChange={(e) => {
                   setForm({ ...form, description: e.target.value });
                   if (fieldErrors.description) {
-                    setFieldErrors({ ...fieldErrors, description: undefined });
+                    setFieldErrors({
+                      ...fieldErrors,
+                      description: undefined,
+                    });
                   }
                 }}
                 rows={4}
                 maxLength={500}
                 aria-invalid={Boolean(fieldErrors.description)}
-                className={`rounded-xl border bg-sand/50 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-clay/40 ${
+                className={`w-full rounded-xl border bg-sand/50 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-clay/40 ${
                   fieldErrors.description ? "border-red-400" : "border-navy/15"
                 }`}
                 placeholder="A short note so you remember why this matters."
               />
+
               <span className="text-xs font-medium text-navy/50">
                 {form.description.length}/500
               </span>
+
               {fieldErrors.description && (
                 <span className="text-xs font-medium text-red-700">
                   {fieldErrors.description}
@@ -205,28 +220,37 @@ function App() {
               )}
             </label>
 
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <label className="grid gap-1 text-sm font-semibold text-navy">
                 Status
+
                 <select
                   value={form.status}
                   onChange={(e) =>
-                    setForm({ ...form, status: e.target.value as TaskStatus })
+                    setForm({
+                      ...form,
+                      status: e.target.value as TaskStatus,
+                    })
                   }
-                  className="rounded-xl border border-navy/15 bg-sand/50 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-clay/40"
+                  className="w-full rounded-xl border border-navy/15 bg-sand/50 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-clay/40"
                 >
                   <option value="Pending">Pending</option>
                   <option value="Completed">Completed</option>
                 </select>
               </label>
+
               <label className="grid gap-1 text-sm font-semibold text-navy">
                 Priority
+
                 <select
                   value={form.priority}
                   onChange={(e) =>
-                    setForm({ ...form, priority: e.target.value as TaskPriority })
+                    setForm({
+                      ...form,
+                      priority: e.target.value as TaskPriority,
+                    })
                   }
-                  className="rounded-xl border border-navy/15 bg-sand/50 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-clay/40"
+                  className="w-full rounded-xl border border-navy/15 bg-sand/50 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-clay/40"
                 >
                   <option value="Low">Low</option>
                   <option value="Medium">Medium</option>
@@ -235,18 +259,19 @@ function App() {
               </label>
             </div>
 
-            <div className="flex gap-2 pt-1">
+            <div className="flex flex-col gap-2 pt-1 sm:flex-row">
               <button
                 type="submit"
-                className="rounded-xl bg-clay px-4 py-2.5 text-sm font-bold text-white hover:bg-[#a84c1f]"
+                className="w-full rounded-xl bg-clay px-4 py-2.5 text-sm font-bold text-white hover:bg-[#a84c1f] sm:w-auto"
               >
                 {editingId === null ? "Create task" : "Save changes"}
               </button>
+
               {editingId !== null && (
                 <button
                   type="button"
                   onClick={cancelEdit}
-                  className="rounded-xl border border-navy/15 px-4 py-2.5 text-sm font-semibold text-navy"
+                  className="w-full rounded-xl border border-navy/15 px-4 py-2.5 text-sm font-semibold text-navy sm:w-auto"
                 >
                   Cancel
                 </button>
@@ -255,17 +280,24 @@ function App() {
           </form>
         </section>
 
-        <section className="rounded-2xl border border-navy/10 bg-white/90 p-6 shadow-[0_18px_40px_rgba(27,58,75,0.08)]">
-          <div className="mb-5 flex flex-wrap items-end justify-between gap-4">
+        <section className="rounded-2xl border border-navy/10 bg-white/90 p-4 shadow-[0_18px_40px_rgba(27,58,75,0.08)] sm:p-6">
+          <div className="mb-5 flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-end sm:justify-between">
             <div>
-              <h2 className="font-display text-2xl text-navy">All tasks</h2>
+              <h2 className="font-display text-2xl text-navy">
+                All tasks
+              </h2>
+
               <p className="text-sm text-navy/60">
-                {loading ? "Loading…" : `${tasks.length} shown · ${pendingCount} pending`}
+                {loading
+                  ? "Loading…"
+                  : `${tasks.length} shown · ${pendingCount} pending`}
               </p>
             </div>
+
             <label className="sr-only" htmlFor="task-search">
               Search tasks
             </label>
+
             <input
               id="task-search"
               value={search}
@@ -275,7 +307,11 @@ function App() {
             />
           </div>
 
-          <div className="mb-5 flex flex-wrap gap-2" role="group" aria-label="Filter by status">
+          <div
+            className="mb-5 flex flex-wrap gap-2"
+            role="group"
+            aria-label="Filter by status"
+          >
             {(["All", "Pending", "Completed"] as Filter[]).map((value) => (
               <button
                 key={value}
@@ -301,8 +337,11 @@ function App() {
           {loading ? (
             <p className="text-sm text-navy/60">Loading tasks…</p>
           ) : tasks.length === 0 ? (
-            <div className="rounded-2xl bg-sand/80 px-5 py-8">
-              <p className="font-display text-xl text-navy">Nothing here yet.</p>
+            <div className="rounded-2xl bg-sand/80 px-4 py-7 sm:px-5 sm:py-8">
+              <p className="font-display text-xl text-navy">
+                Nothing here yet.
+              </p>
+
               <p className="mt-1 text-sm text-navy/70">
                 {debouncedSearch
                   ? "Try another search, or clear the box to see every task."
@@ -310,84 +349,193 @@ function App() {
               </p>
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full min-w-[700px] text-left text-sm">
-                <thead className="border-b border-navy/10 text-xs uppercase tracking-wide text-navy/50">
-                  <tr>
-                    <th className="py-3 pr-3 font-bold">ID</th>
-                    <th className="py-3 pr-3 font-bold">Title</th>
-                    <th className="py-3 pr-3 font-bold">Description</th>
-                    <th className="py-3 pr-3 font-bold">Status</th>
-                    <th className="py-3 pr-3 font-bold">Priority</th>
-                    <th className="py-3 pr-3 font-bold">Created</th>
-                    <th className="py-3 font-bold">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {tasks.map((task) => (
-                    <tr key={task.id} className="border-b border-navy/5 hover:bg-sand/40">
-                      <td className="py-3.5 pr-3 text-navy/50">{task.id}</td>
-                      <td className="py-3.5 pr-3 font-bold text-navy">{task.title}</td>
-                      <td className="max-w-[220px] py-3.5 pr-3 text-navy/70">
-                        {task.description || "—"}
-                      </td>
-                      <td className="py-3.5 pr-3">
-                        <span
-                          className={
-                            task.status === "Completed"
-                              ? "rounded-full bg-leaf/15 px-2.5 py-1 text-xs font-bold text-leaf"
-                              : "rounded-full bg-gold/15 px-2.5 py-1 text-xs font-bold text-gold"
-                          }
-                        >
-                          {task.status}
-                        </span>
-                      </td>
-                      <td className="py-3.5 pr-3">
-                        <span
-                          className={
-                            task.priority === "High"
-                              ? "font-bold text-clay"
-                              : task.priority === "Low"
-                                ? "font-semibold text-navy/60"
-                                : "font-semibold text-navy"
-                          }
-                        >
-                          {task.priority}
-                        </span>
-                      </td>
-                      <td className="whitespace-nowrap py-3.5 pr-3 text-navy/55">
-                        {new Date(task.createdAt).toLocaleString()}
-                      </td>
-                      <td className="py-3.5">
-                        <div className="flex flex-wrap gap-2">
-                          <button
-                            type="button"
-                            onClick={() => toggleStatus(task)}
-                            className="text-xs font-bold text-leaf hover:underline"
-                          >
-                            {task.status === "Pending" ? "Mark completed" : "Mark pending"}
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => startEdit(task)}
-                            className="text-xs font-bold text-navy hover:underline"
-                          >
-                            Edit
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => handleDelete(task.id)}
-                            className="text-xs font-bold text-clay hover:underline"
-                          >
-                            Delete
-                          </button>
-                        </div>
-                      </td>
+            <>
+              {/* Desktop: table */}
+              <div className="hidden overflow-x-auto md:block">
+                <table className="w-full text-left text-sm">
+                  <thead className="border-b border-navy/10 text-xs uppercase tracking-wide text-navy/50">
+                    <tr>
+                      <th className="py-3 pr-3 font-bold">ID</th>
+                      <th className="py-3 pr-3 font-bold">Title</th>
+                      <th className="py-3 pr-3 font-bold">Description</th>
+                      <th className="py-3 pr-3 font-bold">Status</th>
+                      <th className="py-3 pr-3 font-bold">Priority</th>
+                      <th className="py-3 pr-3 font-bold">Created</th>
+                      <th className="py-3 font-bold">Actions</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+
+                  <tbody>
+                    {tasks.map((task) => (
+                      <tr
+                        key={task.id}
+                        className="border-b border-navy/5 hover:bg-sand/40"
+                      >
+                        <td className="py-3.5 pr-3 text-navy/50">
+                          {task.id}
+                        </td>
+
+                        <td className="py-3.5 pr-3 font-bold text-navy">
+                          {task.title}
+                        </td>
+
+                        <td className="max-w-[220px] py-3.5 pr-3 text-navy/70">
+                          {task.description || "—"}
+                        </td>
+
+                        <td className="py-3.5 pr-3">
+                          <span
+                            className={
+                              task.status === "Completed"
+                                ? "rounded-full bg-leaf/15 px-2.5 py-1 text-xs font-bold text-leaf"
+                                : "rounded-full bg-gold/15 px-2.5 py-1 text-xs font-bold text-gold"
+                            }
+                          >
+                            {task.status}
+                          </span>
+                        </td>
+
+                        <td className="py-3.5 pr-3">
+                          <span
+                            className={
+                              task.priority === "High"
+                                ? "font-bold text-clay"
+                                : task.priority === "Low"
+                                  ? "font-semibold text-navy/60"
+                                  : "font-semibold text-navy"
+                            }
+                          >
+                            {task.priority}
+                          </span>
+                        </td>
+
+                        <td className="whitespace-nowrap py-3.5 pr-3 text-navy/55">
+                          {new Date(task.createdAt).toLocaleString()}
+                        </td>
+
+                        <td className="py-3.5">
+                          <div className="flex flex-wrap gap-2">
+                            <button
+                              type="button"
+                              onClick={() => toggleStatus(task)}
+                              className="text-xs font-bold text-leaf hover:underline"
+                            >
+                              {task.status === "Pending"
+                                ? "Mark completed"
+                                : "Mark pending"}
+                            </button>
+
+                            <button
+                              type="button"
+                              onClick={() => startEdit(task)}
+                              className="text-xs font-bold text-navy hover:underline"
+                            >
+                              Edit
+                            </button>
+
+                            <button
+                              type="button"
+                              onClick={() => handleDelete(task.id)}
+                              className="text-xs font-bold text-clay hover:underline"
+                            >
+                              Delete
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Mobile: cards */}
+              <div className="grid gap-4 md:hidden">
+                {tasks.map((task) => (
+                  <div
+                    key={task.id}
+                    className="rounded-2xl border border-navy/10 bg-sand/30 p-4"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <p className="text-xs font-semibold text-navy/50">
+                          Task #{task.id}
+                        </p>
+
+                        <h3 className="mt-1 break-words font-bold text-navy">
+                          {task.title}
+                        </h3>
+                      </div>
+
+                      <span
+                        className={
+                          task.status === "Completed"
+                            ? "shrink-0 rounded-full bg-leaf/15 px-2.5 py-1 text-xs font-bold text-leaf"
+                            : "shrink-0 rounded-full bg-gold/15 px-2.5 py-1 text-xs font-bold text-gold"
+                        }
+                      >
+                        {task.status}
+                      </span>
+                    </div>
+
+                    <p className="mt-3 break-words text-sm leading-relaxed text-navy/70">
+                      {task.description || "No description"}
+                    </p>
+
+                    <div className="mt-4 flex flex-wrap items-center gap-3 text-xs">
+                      <span className="font-semibold text-navy/60">
+                        Priority:
+                      </span>
+
+                      <span
+                        className={
+                          task.priority === "High"
+                            ? "font-bold text-clay"
+                            : task.priority === "Low"
+                              ? "font-semibold text-navy/60"
+                              : "font-semibold text-navy"
+                        }
+                      >
+                        {task.priority}
+                      </span>
+
+                      <span className="text-navy/30">•</span>
+
+                      <span className="text-navy/55">
+                        {new Date(task.createdAt).toLocaleString()}
+                      </span>
+                    </div>
+
+                    <div className="mt-4 flex flex-wrap gap-3 border-t border-navy/10 pt-4">
+                      <button
+                        type="button"
+                        onClick={() => toggleStatus(task)}
+                        className="text-xs font-bold text-leaf hover:underline"
+                      >
+                        {task.status === "Pending"
+                          ? "Mark completed"
+                          : "Mark pending"}
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => startEdit(task)}
+                        className="text-xs font-bold text-navy hover:underline"
+                      >
+                        Edit
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => handleDelete(task.id)}
+                        className="text-xs font-bold text-clay hover:underline"
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </>
           )}
         </section>
       </main>
@@ -396,3 +544,4 @@ function App() {
 }
 
 export default App;
+
