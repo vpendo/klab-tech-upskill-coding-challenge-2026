@@ -20,9 +20,14 @@ const api = axios.create({
   headers: { "Content-Type": "application/json" },
 });
 
-/** GET /tasks  and  GET /tasks?status=Pending */
-export async function getTasks(status?: TaskStatus | "All"): Promise<Task[]> {
-  const params = status && status !== "All" ? { status } : undefined;
+/** GET /tasks, GET /tasks?status=Pending, GET /tasks?q=search */
+export async function getTasks(
+  status?: TaskStatus | "All",
+  q?: string
+): Promise<Task[]> {
+  const params: { status?: string; q?: string } = {};
+  if (status && status !== "All") params.status = status;
+  if (q?.trim()) params.q = q.trim();
   const response = await api.get<Task[]>("/tasks", { params });
   return response.data;
 }

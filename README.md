@@ -1,17 +1,33 @@
-# Task Manager — kLab Tech Upskill
+# Keza — Task Management System
 
-Full-stack task app: **React + TypeScript + Tailwind** → **Axios** → **FastAPI** → **SQLite**.
+Keza (Kinyarwanda for *beautiful / well done*) is a small desk for unfinished work.
 
-The UI is a **cork pinboard** (sticky notes), not a generic admin table. Details: `Frontend/README.md`.
+React + TypeScript + Tailwind + Axios + FastAPI + SQLite.
 
 ```text
-Frontend/   React UI (pnpm)     →  see Frontend/README.md
-Backend/    FastAPI + SQLite    →  see Backend/README.md
+Frontend/   React UI (pnpm)   →  Frontend/README.md
+Backend/    FastAPI + SQLite  →  Backend/README.md
 ```
 
-## Quick start
+## Features
 
-Use **two terminals**. Git Bash: activate the venv with `source .venv/Scripts/activate` (forward slashes).
+- View all tasks
+- Create a task
+- Edit a task
+- Delete a task
+- Mark a task as Pending or Completed
+- Filter tasks by status
+
+Each task has: `id`, `title`, `description`, `status`, `priority`, `createdAt`.
+
+## Extra (challenge optional)
+
+- Form validation (title at least 3 characters, description max 500)
+- Search by title or description (`GET /tasks?q=...`)
+- Improved UI/UX
+- API documentation: FastAPI Swagger UI at http://127.0.0.1:8000/docs (not shown in the app UI)
+
+## How to run
 
 **1. API**
 
@@ -23,6 +39,8 @@ pip install -r requirements.txt
 uvicorn main:app --reload --port 8000
 ```
 
+SQLite file `tasks.db` is created automatically.
+
 **2. UI**
 
 ```bash
@@ -33,11 +51,3 @@ pnpm dev
 
 - App: http://localhost:5173
 - API docs: http://127.0.0.1:8000/docs
-
-SQLite file `tasks.db` is created on API start. `.venv` and `node_modules` are not pushed to GitHub.
-
-## Challenge features
-
-View, create, edit, delete tasks; mark Pending/Completed; filter by status.
-
-Task fields: `id`, `title`, `description`, `status`, `priority`, `createdAt`.

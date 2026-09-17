@@ -67,18 +67,23 @@ def root():
 
 
 @app.get("/tasks", response_model=List[TaskRead])
-def get_all_tasks(status: Optional[str] = None, db: Session = Depends(get_db)):
+def get_all_tasks(
+    status: Optional[str] = None,
+    q: Optional[str] = None,
+    db: Session = Depends(get_db),
+):
     """
     GET /tasks
     GET /tasks?status=Pending
-    GET /tasks?status=Completed
-
-    Filter is optional. If status is omitted, return every task.
+    GET /tasks?q=readme
     """
     query = db.query(Task)
     if status is not None:
         _validate_status_and_priority(status, None)
         query = query.filter(Task.status == status)
+    if q:
+        like = f"%{q.strip()}%"
+        query = query.filter((Task.title.ilike(like)) | (Task.description.ilike(like)))
     return query.order_by(Task.created_at.desc()).all()
 
 

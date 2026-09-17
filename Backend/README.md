@@ -33,7 +33,7 @@ Keep this terminal open. The React app talks to this port.
 
 | Method | Path | Purpose |
 |---|---|---|
-| GET | `/tasks` | List tasks (`?status=Pending` or `?status=Completed` to filter) |
+| GET | `/tasks` | List tasks (`?status=Pending`, `?q=search`) |
 | GET | `/tasks/{id}` | Get one task |
 | POST | `/tasks` | Create a task |
 | PUT | `/tasks/{id}` | Update a task (edit or mark Pending/Completed) |

@@ -1,14 +1,19 @@
 /**
- * Pinboard UI — cork wall + sticky notes (not a generic dashboard).
- * Still covers every challenge action:
- * view, create, edit, delete, mark Pending/Completed, filter by status.
+ * Keza — a calm task desk.
+ * Core: view, create, edit, delete, status, filter.
+ * Extra: form validation, search.
  */
 
-import { useEffect, useMemo, useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { createTask, deleteTask, getTasks, updateTask } from "./api";
 import type { Task, TaskPriority, TaskStatus } from "./types";
 
 type Filter = "All" | TaskStatus;
+
+type FieldErrors = {
+  title?: string;
+  description?: string;
+};
 
 const emptyForm = {
   title: "",
@@ -17,44 +22,40 @@ const emptyForm = {
   priority: "Medium" as TaskPriority,
 };
 
-const TILT = ["-rotate-1", "rotate-1", "-rotate-2", "rotate-[1.4deg]"];
-
-function stickyClass(task: Task) {
-  if (task.status === "Completed") {
-    return "bg-[#e8e1d1] text-stone-600";
+function validateForm(title: string, description: string): FieldErrors {
+  const errors: FieldErrors = {};
+  if (!title) errors.title = "Title is required.";
+  else if (title.length < 3) errors.title = "Use at least 3 characters.";
+  else if (title.length > 200) errors.title = "Title must be 200 characters or less.";
+  if (description.length > 500) {
+    errors.description = "Description must be 500 characters or less.";
   }
-  if (task.priority === "High") return "bg-[#ffd6c9]";
-  if (task.priority === "Low") return "bg-[#d7eef4]";
-  return "bg-[#ffe9a8]";
-}
-
-function formatWhen(iso: string) {
-  return new Date(iso).toLocaleString(undefined, {
-    day: "numeric",
-    month: "short",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
+  return errors;
 }
 
 function App() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [filter, setFilter] = useState<Filter>("All");
-  const [query, setQuery] = useState("");
+  const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [form, setForm] = useState(emptyForm);
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [editingId, setEditingId] = useState<number | null>(null);
 
-  async function loadTasks(nextFilter: Filter = filter) {
+  useEffect(() => {
+    const timer = window.setTimeout(() => setDebouncedSearch(search), 300);
+    return () => window.clearTimeout(timer);
+  }, [search]);
+
+  async function loadTasks(nextFilter: Filter = filter, nextQuery = debouncedSearch) {
     try {
       setError("");
-      const data = await getTasks(nextFilter);
+      const data = await getTasks(nextFilter, nextQuery);
       setTasks(data);
     } catch {
-      setError(
-        "The pinboard cannot reach FastAPI. In Backend run: uvicorn main:app --reload --port 8000"
-      );
+      setError("Cannot reach the server. Make sure the API is running on port 8000.");
     } finally {
       setLoading(false);
     }
@@ -62,47 +63,37 @@ function App() {
 
   useEffect(() => {
     setLoading(true);
-    void loadTasks(filter);
+    void loadTasks(filter, debouncedSearch);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filter]);
-
-  const visible = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    if (!q) return tasks;
-    return tasks.filter(
-      (task) =>
-        task.title.toLowerCase().includes(q) ||
-        task.description.toLowerCase().includes(q)
-    );
-  }, [tasks, query]);
-
-  const openCount = tasks.filter((t) => t.status === "Pending").length;
+  }, [filter, debouncedSearch]);
 
   async function handleSubmit(event: FormEvent) {
     event.preventDefault();
     const title = form.title.trim();
-    if (!title) {
-      setError("Give the note a title — even a short one.");
-      return;
-    }
+    const description = form.description.trim();
+    const nextErrors = validateForm(title, description);
+    setFieldErrors(nextErrors);
+    if (nextErrors.title || nextErrors.description) return;
 
     try {
       setError("");
       if (editingId === null) {
-        await createTask({ ...form, title });
+        await createTask({ ...form, title, description });
       } else {
-        await updateTask(editingId, { ...form, title });
+        await updateTask(editingId, { ...form, title, description });
         setEditingId(null);
       }
       setForm(emptyForm);
+      setFieldErrors({});
       await loadTasks();
     } catch {
-      setError("Could not save that note. Is the API still running?");
+      setError("Could not save the task. Check the form and try again.");
     }
   }
 
   function startEdit(task: Task) {
     setEditingId(task.id);
+    setFieldErrors({});
     setForm({
       title: task.title,
       description: task.description,
@@ -114,16 +105,17 @@ function App() {
   function cancelEdit() {
     setEditingId(null);
     setForm(emptyForm);
+    setFieldErrors({});
   }
 
   async function handleDelete(id: number) {
-    if (!window.confirm("Pull this note off the board?")) return;
+    if (!window.confirm("Delete this task?")) return;
     try {
       await deleteTask(id);
       if (editingId === id) cancelEdit();
       await loadTasks();
     } catch {
-      setError("Could not remove the note.");
+      setError("Could not delete the task.");
     }
   }
 
@@ -133,129 +125,151 @@ function App() {
       await updateTask(task.id, { status: next });
       await loadTasks();
     } catch {
-      setError("Could not change the status.");
+      setError("Could not update status.");
     }
   }
 
+  const pendingCount = tasks.filter((task) => task.status === "Pending").length;
+
   return (
-    <div className="min-h-svh px-4 py-6 sm:px-8 sm:py-10">
-      <div className="mx-auto grid max-w-6xl gap-6 lg:grid-cols-[minmax(280px,360px)_1fr] lg:items-start">
-        <aside className="paper-lines rounded-sm bg-[#fffaf1] p-6 shadow-[8px_10px_0_rgba(42,33,24,0.18)] ring-1 ring-stone-800/10">
-          <p className="text-[11px] font-extrabold tracking-[0.22em] text-[#b08968] uppercase">
-            kLab · Tech Upskill
+    <div className="min-h-svh">
+      <header className="border-b border-navy/10 bg-navy text-sand">
+        <div className="mx-auto max-w-6xl px-4 py-6">
+          <h1 className="font-display text-3xl text-white sm:text-4xl">Keza</h1>
+          <p className="mt-2 max-w-lg text-sm leading-relaxed text-sand/80">
+            A quiet place for unfinished work. Write it down, set the pace, mark it done.
           </p>
-          <h1 className="font-display mt-2 text-4xl leading-none text-ink">
-            Pinboard
-          </h1>
-          <p className="mt-3 text-sm leading-relaxed text-stone-600">
-            Write it down. Pin it. Cross it off. A small desk for real work —
-            not another grey admin table.
+        </div>
+      </header>
+
+      <main className="mx-auto grid max-w-6xl gap-6 px-4 py-8 lg:grid-cols-[340px_1fr]">
+        <section className="h-fit rounded-2xl border border-navy/10 bg-white/90 p-6 shadow-[0_18px_40px_rgba(27,58,75,0.08)]">
+          <p className="text-xs font-bold uppercase tracking-wide text-clay">
+            {editingId === null ? "New task" : "Editing"}
           </p>
-
-          <p className="mt-4 inline-block -rotate-1 bg-[#ffe9a8] px-3 py-1 text-xs font-extrabold text-ink shadow-sm">
-            {openCount} still open
-          </p>
-
-          <form onSubmit={handleSubmit} className="mt-6 grid gap-3">
-            <h2 className="font-display text-xl">
-              {editingId === null ? "New sticky" : `Rewriting note #${editingId}`}
-            </h2>
-
-            <label className="grid gap-1 text-xs font-extrabold uppercase tracking-wide text-stone-500">
+          <h2 className="font-display mt-1 text-2xl text-navy">
+            {editingId === null ? "Create a task" : `Update task #${editingId}`}
+          </h2>
+          <form onSubmit={handleSubmit} className="mt-5 grid gap-4" noValidate>
+            <label className="grid gap-1 text-sm font-semibold text-navy">
               Title
               <input
                 value={form.title}
-                onChange={(e) => setForm({ ...form, title: e.target.value })}
-                placeholder="Call the mentor. Ship the README…"
+                onChange={(e) => {
+                  setForm({ ...form, title: e.target.value });
+                  if (fieldErrors.title) setFieldErrors({ ...fieldErrors, title: undefined });
+                }}
                 maxLength={200}
-                className="rounded-sm border-0 border-b-2 border-stone-300 bg-transparent px-0 py-2 text-base font-bold text-ink outline-none placeholder:font-medium placeholder:text-stone-400 focus:border-[#e07a5f]"
+                aria-invalid={Boolean(fieldErrors.title)}
+                className={`rounded-xl border bg-sand/50 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-clay/40 ${
+                  fieldErrors.title ? "border-red-400" : "border-navy/15"
+                }`}
+                placeholder="What needs to get done?"
               />
+              {fieldErrors.title && (
+                <span className="text-xs font-medium text-red-700">{fieldErrors.title}</span>
+              )}
             </label>
 
-            <label className="grid gap-1 text-xs font-extrabold uppercase tracking-wide text-stone-500">
-              Why it matters
+            <label className="grid gap-1 text-sm font-semibold text-navy">
+              Description
               <textarea
                 value={form.description}
-                onChange={(e) => setForm({ ...form, description: e.target.value })}
-                placeholder="A sentence for future-you."
-                rows={3}
-                className="rounded-sm border border-dashed border-stone-300 bg-[#fff6e8] px-3 py-2 text-sm font-medium text-ink outline-none focus:border-[#7d9b76]"
+                onChange={(e) => {
+                  setForm({ ...form, description: e.target.value });
+                  if (fieldErrors.description) {
+                    setFieldErrors({ ...fieldErrors, description: undefined });
+                  }
+                }}
+                rows={4}
+                maxLength={500}
+                aria-invalid={Boolean(fieldErrors.description)}
+                className={`rounded-xl border bg-sand/50 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-clay/40 ${
+                  fieldErrors.description ? "border-red-400" : "border-navy/15"
+                }`}
+                placeholder="A short note so you remember why this matters."
               />
+              <span className="text-xs font-medium text-navy/50">
+                {form.description.length}/500
+              </span>
+              {fieldErrors.description && (
+                <span className="text-xs font-medium text-red-700">
+                  {fieldErrors.description}
+                </span>
+              )}
             </label>
 
             <div className="grid grid-cols-2 gap-3">
-              <label className="grid gap-1 text-xs font-extrabold uppercase tracking-wide text-stone-500">
+              <label className="grid gap-1 text-sm font-semibold text-navy">
                 Status
                 <select
                   value={form.status}
                   onChange={(e) =>
                     setForm({ ...form, status: e.target.value as TaskStatus })
                   }
-                  className="rounded-sm border border-stone-300 bg-white px-2 py-2 text-sm font-bold"
+                  className="rounded-xl border border-navy/15 bg-sand/50 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-clay/40"
                 >
                   <option value="Pending">Pending</option>
                   <option value="Completed">Completed</option>
                 </select>
               </label>
-              <label className="grid gap-1 text-xs font-extrabold uppercase tracking-wide text-stone-500">
+              <label className="grid gap-1 text-sm font-semibold text-navy">
                 Priority
                 <select
                   value={form.priority}
                   onChange={(e) =>
                     setForm({ ...form, priority: e.target.value as TaskPriority })
                   }
-                  className="rounded-sm border border-stone-300 bg-white px-2 py-2 text-sm font-bold"
+                  className="rounded-xl border border-navy/15 bg-sand/50 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-clay/40"
                 >
-                  <option value="Low">Low · sky</option>
-                  <option value="Medium">Medium · sun</option>
-                  <option value="High">High · coral</option>
+                  <option value="Low">Low</option>
+                  <option value="Medium">Medium</option>
+                  <option value="High">High</option>
                 </select>
               </label>
             </div>
 
-            <div className="mt-1 flex flex-wrap gap-2">
+            <div className="flex gap-2 pt-1">
               <button
                 type="submit"
-                className="rounded-sm bg-[#e07a5f] px-4 py-2 text-sm font-extrabold text-white shadow-[3px_3px_0_#2a2118] hover:translate-y-px"
+                className="rounded-xl bg-clay px-4 py-2.5 text-sm font-bold text-white hover:bg-[#a84c1f]"
               >
-                {editingId === null ? "Pin to board" : "Save rewrite"}
+                {editingId === null ? "Create task" : "Save changes"}
               </button>
               {editingId !== null && (
                 <button
                   type="button"
                   onClick={cancelEdit}
-                  className="px-3 py-2 text-sm font-bold text-stone-500 underline decoration-dotted"
+                  className="rounded-xl border border-navy/15 px-4 py-2.5 text-sm font-semibold text-navy"
                 >
-                  Leave it
+                  Cancel
                 </button>
               )}
             </div>
           </form>
-        </aside>
+        </section>
 
-        <section>
-          <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
+        <section className="rounded-2xl border border-navy/10 bg-white/90 p-6 shadow-[0_18px_40px_rgba(27,58,75,0.08)]">
+          <div className="mb-5 flex flex-wrap items-end justify-between gap-4">
             <div>
-              <h2 className="font-display text-3xl text-[#fff8ee] drop-shadow-sm">
-                On the cork
-              </h2>
-              <p className="text-sm font-bold text-stone-800/70">
-                Filter by status. Colour = priority. Tick = done.
+              <h2 className="font-display text-2xl text-navy">All tasks</h2>
+              <p className="text-sm text-navy/60">
+                {loading ? "Loading…" : `${tasks.length} shown · ${pendingCount} pending`}
               </p>
             </div>
+            <label className="sr-only" htmlFor="task-search">
+              Search tasks
+            </label>
             <input
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search the board…"
-              className="w-full max-w-xs rounded-sm bg-[#fffaf1]/90 px-3 py-2 text-sm font-bold text-ink outline-none ring-1 ring-stone-800/15 placeholder:font-medium sm:w-56"
+              id="task-search"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search title or description…"
+              className="w-full max-w-sm rounded-full border border-navy/15 bg-sand/70 px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-clay/40"
             />
           </div>
 
-          <div
-            className="mb-4 flex flex-wrap gap-2"
-            role="group"
-            aria-label="Filter by status"
-          >
+          <div className="mb-5 flex flex-wrap gap-2" role="group" aria-label="Filter by status">
             {(["All", "Pending", "Completed"] as Filter[]).map((value) => (
               <button
                 key={value}
@@ -263,88 +277,114 @@ function App() {
                 onClick={() => setFilter(value)}
                 className={
                   filter === value
-                    ? "rounded-sm bg-ink px-3 py-1.5 text-sm font-extrabold text-[#ffe9a8]"
-                    : "rounded-sm bg-[#fffaf1]/70 px-3 py-1.5 text-sm font-extrabold text-ink hover:bg-[#fffaf1]"
+                    ? "rounded-full bg-navy px-4 py-1.5 text-sm font-bold text-white"
+                    : "rounded-full bg-sand px-4 py-1.5 text-sm font-semibold text-navy hover:bg-sand/70"
                 }
               >
-                {value === "All" ? "Whole board" : value}
+                {value}
               </button>
             ))}
           </div>
 
           {error && (
-            <p className="mb-4 rounded-sm bg-[#fff1ea] px-3 py-2 text-sm font-bold text-[#9a3412] shadow-sm">
+            <p className="mb-4 rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800">
               {error}
             </p>
           )}
 
           {loading ? (
-            <p className="font-display text-2xl text-[#fff8ee]">Pinning…</p>
-          ) : visible.length === 0 ? (
-            <div className="max-w-sm -rotate-1 rounded-sm bg-[#fffaf1] p-6 shadow-[6px_8px_0_rgba(42,33,24,0.16)]">
-              <p className="font-display text-2xl">Quiet cork.</p>
-              <p className="mt-2 text-sm font-medium text-stone-600">
-                Nothing here yet. Write a sticky on the left — the first one is
-                usually the hardest.
+            <p className="text-sm text-navy/60">Loading tasks…</p>
+          ) : tasks.length === 0 ? (
+            <div className="rounded-2xl bg-sand/80 px-5 py-8">
+              <p className="font-display text-xl text-navy">Nothing here yet.</p>
+              <p className="mt-1 text-sm text-navy/70">
+                {debouncedSearch
+                  ? "Try another search, or clear the box to see every task."
+                  : "Create the first task on the left. A clear title is enough to start."}
               </p>
             </div>
           ) : (
-            <ul className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-              {visible.map((task) => (
-                <li
-                  key={task.id}
-                  className={`${stickyClass(task)} ${TILT[task.id % TILT.length]} relative p-5 pt-7 shadow-[5px_7px_0_rgba(42,33,24,0.18)] transition hover:rotate-0 hover:z-10`}
-                >
-                  <span className="absolute left-1/2 top-1.5 h-3 w-3 -translate-x-1/2 rounded-full bg-[#e07a5f] shadow-sm ring-2 ring-white/70" />
-                  <div className="flex items-start justify-between gap-2">
-                    <h3
-                      className={`font-display text-xl leading-tight ${
-                        task.status === "Completed" ? "line-through decoration-2" : ""
-                      }`}
-                    >
-                      {task.title}
-                    </h3>
-                    <span className="shrink-0 text-[10px] font-extrabold uppercase tracking-wider">
-                      {task.priority}
-                    </span>
-                  </div>
-                  {task.description && (
-                    <p className="mt-2 text-sm font-medium leading-snug">
-                      {task.description}
-                    </p>
-                  )}
-                  <p className="mt-3 text-[11px] font-extrabold uppercase tracking-wide opacity-70">
-                    #{task.id} · {task.status} · {formatWhen(task.createdAt)}
-                  </p>
-                  <div className="mt-4 flex flex-wrap gap-1.5">
-                    <button
-                      type="button"
-                      onClick={() => toggleStatus(task)}
-                      className="rounded-sm bg-ink/90 px-2 py-1 text-[11px] font-extrabold text-[#fff8ee]"
-                    >
-                      {task.status === "Pending" ? "Mark done" : "Reopen"}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => startEdit(task)}
-                      className="rounded-sm bg-white/70 px-2 py-1 text-[11px] font-extrabold"
-                    >
-                      Rewrite
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleDelete(task.id)}
-                      className="rounded-sm px-2 py-1 text-[11px] font-extrabold text-red-800"
-                    >
-                      Pull off
-                    </button>
-                  </div>
-                </li>
-              ))}
-            </ul>
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[700px] text-left text-sm">
+                <thead className="border-b border-navy/10 text-xs uppercase tracking-wide text-navy/50">
+                  <tr>
+                    <th className="py-3 pr-3 font-bold">ID</th>
+                    <th className="py-3 pr-3 font-bold">Title</th>
+                    <th className="py-3 pr-3 font-bold">Description</th>
+                    <th className="py-3 pr-3 font-bold">Status</th>
+                    <th className="py-3 pr-3 font-bold">Priority</th>
+                    <th className="py-3 pr-3 font-bold">Created</th>
+                    <th className="py-3 font-bold">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {tasks.map((task) => (
+                    <tr key={task.id} className="border-b border-navy/5 hover:bg-sand/40">
+                      <td className="py-3.5 pr-3 text-navy/50">{task.id}</td>
+                      <td className="py-3.5 pr-3 font-bold text-navy">{task.title}</td>
+                      <td className="max-w-[220px] py-3.5 pr-3 text-navy/70">
+                        {task.description || "—"}
+                      </td>
+                      <td className="py-3.5 pr-3">
+                        <span
+                          className={
+                            task.status === "Completed"
+                              ? "rounded-full bg-leaf/15 px-2.5 py-1 text-xs font-bold text-leaf"
+                              : "rounded-full bg-gold/15 px-2.5 py-1 text-xs font-bold text-gold"
+                          }
+                        >
+                          {task.status}
+                        </span>
+                      </td>
+                      <td className="py-3.5 pr-3">
+                        <span
+                          className={
+                            task.priority === "High"
+                              ? "font-bold text-clay"
+                              : task.priority === "Low"
+                                ? "font-semibold text-navy/60"
+                                : "font-semibold text-navy"
+                          }
+                        >
+                          {task.priority}
+                        </span>
+                      </td>
+                      <td className="whitespace-nowrap py-3.5 pr-3 text-navy/55">
+                        {new Date(task.createdAt).toLocaleString()}
+                      </td>
+                      <td className="py-3.5">
+                        <div className="flex flex-wrap gap-2">
+                          <button
+                            type="button"
+                            onClick={() => toggleStatus(task)}
+                            className="text-xs font-bold text-leaf hover:underline"
+                          >
+                            {task.status === "Pending" ? "Mark completed" : "Mark pending"}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => startEdit(task)}
+                            className="text-xs font-bold text-navy hover:underline"
+                          >
+                            Edit
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleDelete(task.id)}
+                            className="text-xs font-bold text-clay hover:underline"
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           )}
         </section>
-      </div>
+      </main>
     </div>
   );
 }

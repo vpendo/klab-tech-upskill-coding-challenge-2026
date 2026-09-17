@@ -1,15 +1,13 @@
 @import "tailwindcss";
 
 @theme {
-  --font-display: "Fraunces", Georgia, serif;
-  --font-sans: "Nunito", ui-sans-serif, system-ui, sans-serif;
-  --color-ink: #2a2118;
-  --color-linen: #efe6d6;
-  --color-cork: #b08968;
-  --color-sun: #f4c95d;
-  --color-sage: #7d9b76;
-  --color-coral: #e07a5f;
-  --color-sky: #7eb8c9;
+  --font-sans: "Manrope", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Source Serif 4", Georgia, serif;
+  --color-navy: #1b3a4b;
+  --color-clay: #c45c26;
+  --color-sand: #f4efe6;
+  --color-leaf: #2f6f4e;
+  --color-gold: #b45309;
 }
 
 html,
@@ -20,27 +18,10 @@ body,
 
 body {
   margin: 0;
-  color: var(--color-ink);
+  color: #1b3a4b;
   font-family: var(--font-sans);
-  background-color: #c9a07a;
-  background-image:
-    radial-gradient(circle at 18% 12%, rgba(255, 248, 230, 0.35), transparent 28%),
-    repeating-linear-gradient(
-      90deg,
-      rgba(90, 56, 28, 0.07) 0 2px,
-      transparent 2px 11px
-    ),
-    repeating-linear-gradient(
-      0deg,
-      rgba(90, 56, 28, 0.06) 0 2px,
-      transparent 2px 11px
-    );
-}
-
-.paper-lines {
-  background-image: repeating-linear-gradient(
-    to bottom,
-    transparent 0 31px,
-    rgba(42, 33, 24, 0.08) 31px 32px
-  );
+  background:
+    radial-gradient(900px 420px at 8% -10%, rgba(196, 92, 38, 0.12), transparent 55%),
+    radial-gradient(700px 380px at 100% 0%, rgba(47, 111, 78, 0.1), transparent 50%),
+    #f4efe6;
 }
