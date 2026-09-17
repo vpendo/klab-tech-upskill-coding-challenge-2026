@@ -1,15 +1,6 @@
 /**
- * api.ts
- * ------
- * Axios talks to FastAPI. Each function matches one row in the challenge table:
- *
- *   GET    /tasks        → getTasks()
- *   GET    /tasks/:id    → getTask(id)
- *   POST   /tasks        → createTask()
- *   PUT    /tasks/:id    → updateTask()
- *   DELETE /tasks/:id    → deleteTask()
- *
- * FastAPI must be running on port 8000 (see README).
+ * API service for communicating with the FastAPI backend.
+ * Handles task CRUD, search, and status filtering.
  */
 
 import axios from "axios";
@@ -32,7 +23,7 @@ const api = axios.create({
   headers: { "Content-Type": "application/json" },
 });
 
-/** GET /tasks, GET /tasks?status=Pending, GET /tasks?q=search */
+/** Fetch tasks with optional status and search filters. */
 export async function getTasks(
   status?: TaskStatus | "All",
   q?: string
@@ -44,25 +35,25 @@ export async function getTasks(
   return response.data;
 }
 
-/** GET /tasks/:id */
+/** Fetch a single task by ID. */
 export async function getTask(id: number): Promise<Task> {
   const response = await api.get<Task>(`/tasks/${id}`);
   return response.data;
 }
 
-/** POST /tasks */
+/** Create a new task. */
 export async function createTask(payload: TaskCreate): Promise<Task> {
   const response = await api.post<Task>("/tasks", payload);
   return response.data;
 }
 
-/** PUT /tasks/:id  (edit fields OR toggle Pending/Completed) */
+/** Update a task or change its status. */
 export async function updateTask(id: number, payload: TaskUpdate): Promise<Task> {
   const response = await api.put<Task>(`/tasks/${id}`, payload);
   return response.data;
 }
 
-/** DELETE /tasks/:id */
+/** Delete a task by ID. */
 export async function deleteTask(id: number): Promise<void> {
   await api.delete(`/tasks/${id}`);
 }
