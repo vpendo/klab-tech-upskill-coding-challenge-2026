@@ -15,6 +15,7 @@ Extra (optional, still useful):
   FastAPI auto docs at /docs
 """
 
+import os
 from typing import List, Optional
 
 from fastapi import Depends, FastAPI, HTTPException
@@ -34,10 +35,20 @@ app = FastAPI(
     version="1.0.0",
 )
 
-# CORS: allow the React app (Vite default port 5173) to call this API.
+# CORS: local Vite + the live Netlify site. Extra origins: CORS_ORIGINS=url1,url2
+_default_origins = (
+    "http://localhost:5173,"
+    "http://127.0.0.1:5173,"
+    "https://pendotaskmanager.netlify.app"
+)
+allow_origins = [
+    origin.strip()
+    for origin in os.getenv("CORS_ORIGINS", _default_origins).split(",")
+    if origin.strip()
+]
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
+    allow_origins=allow_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

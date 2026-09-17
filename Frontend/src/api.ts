@@ -15,8 +15,20 @@
 import axios from "axios";
 import type { Task, TaskCreate, TaskStatus, TaskUpdate } from "./types";
 
+const LOCAL_API = "http://127.0.0.1:8000";
+const LIVE_API = "https://klab-tech-upskill-coding-challenge-2026-uyb8.onrender.com";
+
+function apiBaseUrl(): string {
+  if (import.meta.env.VITE_API_URL) return import.meta.env.VITE_API_URL;
+  if (typeof window !== "undefined") {
+    const host = window.location.hostname;
+    if (host !== "localhost" && host !== "127.0.0.1") return LIVE_API;
+  }
+  return LOCAL_API;
+}
+
 const api = axios.create({
-  baseURL: "http://127.0.0.1:8000",
+  baseURL: apiBaseUrl(),
   headers: { "Content-Type": "application/json" },
 });
 

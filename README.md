@@ -21,6 +21,16 @@ SQLite (tasks.db)               Database
 
 More detail: `Frontend/README.md` and `Backend/README.md`.
 
+## Live demo
+
+| Part | URL |
+|---|---|
+| App (Netlify) | https://pendotaskmanager.netlify.app/ |
+| API (Render) | https://klab-tech-upskill-coding-challenge-2026-uyb8.onrender.com/ |
+| API docs | https://klab-tech-upskill-coding-challenge-2026-uyb8.onrender.com/docs |
+
+The Netlify site calls the Render API. The first request after idle may take ~30 seconds while Render wakes up.
+
 ## Challenge checklist
 
 | Requirement | How it works |
@@ -39,7 +49,7 @@ More detail: `Frontend/README.md` and `Backend/README.md`.
 
 - Form validation (title at least 3 characters, description max 500)
 - Improved UI/UX
-- API docs: http://127.0.0.1:8000/docs
+- API docs: https://klab-tech-upskill-coding-challenge-2026-uyb8.onrender.com/docs
 
 ## How to set up the database
 
@@ -117,6 +127,6 @@ Frontend/    React UI
 ## Technical decisions
 
 - SQLite so the project runs without a hosted database.
-- CORS so the UI on port 5173 can call the API on port 8000.
+- CORS so the UI (localhost and https://pendotaskmanager.netlify.app) can call the API.
 - Search and status filter are query params on `GET /tasks`.
 - `.venv`, `node_modules`, and `tasks.db` are not committed.

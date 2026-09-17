@@ -25,7 +25,11 @@ pnpm dev
 
 Open http://localhost:5173
 
-The UI calls `http://127.0.0.1:8000`. If the table does not load, the API is not running.
+The UI calls `http://127.0.0.1:8000` locally. On Netlify it calls the Render API.
+
+Live app: https://pendotaskmanager.netlify.app/
+
+After changing API URL or CORS, **redeploy both** (push to GitHub so Netlify and Render rebuild).
 
 ## What you can do (CRUD)
 

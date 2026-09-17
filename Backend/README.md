@@ -38,6 +38,8 @@ uvicorn main:app --reload --port 8000
 
 - API: http://127.0.0.1:8000
 - Interactive docs: http://127.0.0.1:8000/docs
+- Live API: https://klab-tech-upskill-coding-challenge-2026-uyb8.onrender.com/
+- Live docs: https://klab-tech-upskill-coding-challenge-2026-uyb8.onrender.com/docs
 
 Keep this process running while you use the frontend.
 
