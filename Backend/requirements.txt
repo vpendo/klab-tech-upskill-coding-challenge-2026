@@ -1,0 +1,10 @@
+# FastAPI = the web framework that turns Python functions into HTTP endpoints
+fastapi==0.115.12
+
+# Uvicorn = the server that actually runs FastAPI (like "live server" for the API)
+uvicorn[standard]==0.34.0
+
+# SQLAlchemy = talks to SQLite using Python classes instead of raw SQL everywhere
+sqlalchemy==2.0.40
+
+# Pydantic v2 is already included with FastAPI; we list nothing extra for it
