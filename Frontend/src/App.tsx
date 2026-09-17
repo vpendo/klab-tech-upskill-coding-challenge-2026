@@ -1,11 +1,10 @@
 /**
- * Keza — a calm task desk.
- * Core: view, create, edit, delete, status, filter.
- * Extra: form validation, search.
+ * Task Management System.
+ * CRUD: create, view, update, delete. Also filter, search, mark status.
  */
 
 import { useEffect, useState, type FormEvent } from "react";
-import { createTask, deleteTask, getTasks, updateTask } from "./api";
+import { createTask, deleteTask, getTask, getTasks, updateTask } from "./api";
 import type { Task, TaskPriority, TaskStatus } from "./types";
 
 type Filter = "All" | TaskStatus;
@@ -91,15 +90,20 @@ function App() {
     }
   }
 
-  function startEdit(task: Task) {
-    setEditingId(task.id);
-    setFieldErrors({});
-    setForm({
-      title: task.title,
-      description: task.description,
-      status: task.status,
-      priority: task.priority,
-    });
+  async function startEdit(task: Task) {
+    try {
+      const latest = await getTask(task.id);
+      setEditingId(latest.id);
+      setFieldErrors({});
+      setForm({
+        title: latest.title,
+        description: latest.description,
+        status: latest.status,
+        priority: latest.priority,
+      });
+    } catch {
+      setError("Could not load that task.");
+    }
   }
 
   function cancelEdit() {
@@ -135,9 +139,11 @@ function App() {
     <div className="min-h-svh">
       <header className="border-b border-navy/10 bg-navy text-sand">
         <div className="mx-auto max-w-6xl px-4 py-6">
-          <h1 className="font-display text-3xl text-white sm:text-4xl">Keza</h1>
+          <h1 className="font-display text-3xl text-white sm:text-4xl">
+            Task Management
+          </h1>
           <p className="mt-2 max-w-lg text-sm leading-relaxed text-sand/80">
-            A quiet place for unfinished work. Write it down, set the pace, mark it done.
+            Create, search, update, and close work in one place.
           </p>
         </div>
       </header>
