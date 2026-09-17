@@ -1,10 +1,7 @@
 /**
- * types.ts
- * --------
- * TypeScript version of the challenge Task fields:
- *   id, title, description, status, priority, createdAt
+ * Defines the TypeScript types used for tasks.
  *
- * Keep this in sync with Backend/schemas.py (TaskRead / TaskCreate).
+ * Keeps the frontend types in sync with the FastAPI backend.
  */
 
 export type TaskStatus = "Pending" | "Completed";
