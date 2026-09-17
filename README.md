@@ -1,6 +1,8 @@
 # Task Manager — kLab Tech Upskill
 
-Full-stack task app: **React + TypeScript** → **Axios** → **FastAPI** → **SQLite**.
+Full-stack task app: **React + TypeScript + Tailwind** → **Axios** → **FastAPI** → **SQLite**.
+
+The UI is a **cork pinboard** (sticky notes), not a generic admin table. Details: `Frontend/README.md`.
 
 ```text
 Frontend/   React UI (pnpm)     →  see Frontend/README.md

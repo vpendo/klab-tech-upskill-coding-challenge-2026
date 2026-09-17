@@ -1,46 +1,35 @@
-# Frontend — React + TypeScript
+# Frontend — Pinboard (React + TypeScript + Tailwind)
 
-UI for the kLab Task Manager. Uses **pnpm** and **Axios**.
+A cork-and-sticky-note desk instead of a generic admin table.
 
 ## Stack
 
-- React 19 + TypeScript
-- Vite
-- Axios (calls FastAPI on port 8000)
+- React 19 + TypeScript + Vite
+- Tailwind CSS
+- Axios → FastAPI on port 8000
 
 ## Setup
 
 ```bash
 cd Frontend
 pnpm install
-```
-
-Axios is already listed in `package.json`. Do not commit `node_modules`.
-
-## Run
-
-Start the **backend first** (see `Backend/README.md`), then:
-
-```bash
+pnpm add -D tailwindcss @tailwindcss/vite   # already in package.json after first install
 pnpm dev
 ```
 
-Open http://localhost:5173
+Start the backend first (`Backend/README.md`). App: http://localhost:5173
 
-## What the UI does
+## Challenge features in the UI
 
-- View all tasks
-- Create a task
-- Edit a task
-- Delete a task
-- Mark Pending or Completed
-- Filter by status
-
-## Files
-
-| File | Role |
+| Requirement | On the pinboard |
 |---|---|
-| `src/types.ts` | Task fields in TypeScript |
-| `src/api.ts` | Axios wrappers for each REST endpoint |
-| `src/App.tsx` | Form + list + filters |
-| `src/App.css` | Layout and colors |
+| View all tasks | Sticky notes on the cork |
+| Create | “New sticky” / **Pin to board** |
+| Edit | **Rewrite** |
+| Delete | **Pull off** |
+| Pending / Completed | **Mark done** / **Reopen** |
+| Filter by status | Whole board · Pending · Completed |
+
+Colours: **coral** = high, **sun** = medium, **sky** = low, faded paper = completed.
+
+Search is extra (filters the notes already loaded).

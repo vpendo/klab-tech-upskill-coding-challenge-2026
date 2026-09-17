@@ -1,21 +1,46 @@
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
+@import "tailwindcss";
+
+@theme {
+  --font-display: "Fraunces", Georgia, serif;
+  --font-sans: "Nunito", ui-sans-serif, system-ui, sans-serif;
+  --color-ink: #2a2118;
+  --color-linen: #efe6d6;
+  --color-cork: #b08968;
+  --color-sun: #f4c95d;
+  --color-sage: #7d9b76;
+  --color-coral: #e07a5f;
+  --color-sky: #7eb8c9;
 }
 
 html,
-body {
-  margin: 0;
+body,
+#root {
   min-height: 100%;
 }
 
 body {
-  font-family: "Segoe UI", system-ui, sans-serif;
-  background: linear-gradient(180deg, #f3f8f4 0%, #eef2f0 40%, #f7f6f2 100%);
-  color: #143528;
+  margin: 0;
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  background-color: #c9a07a;
+  background-image:
+    radial-gradient(circle at 18% 12%, rgba(255, 248, 230, 0.35), transparent 28%),
+    repeating-linear-gradient(
+      90deg,
+      rgba(90, 56, 28, 0.07) 0 2px,
+      transparent 2px 11px
+    ),
+    repeating-linear-gradient(
+      0deg,
+      rgba(90, 56, 28, 0.06) 0 2px,
+      transparent 2px 11px
+    );
 }
 
-#root {
-  min-height: 100svh;
+.paper-lines {
+  background-image: repeating-linear-gradient(
+    to bottom,
+    transparent 0 31px,
+    rgba(42, 33, 24, 0.08) 31px 32px
+  );
 }
